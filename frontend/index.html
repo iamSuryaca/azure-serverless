@@ -1,0 +1,338 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>event App</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/2.2.1/vue-router.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+  <script src="constants.js"></script>
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap-theme.min.css">
+</head>
+<body>
+ 
+<div class="container">  
+  <header class="page-header">   
+    <div class="branding"> 
+      <img src="https://bit.ly/2zqyrJd"  alt="Logo" title="Home page" class="logo"/>
+      <h1>Event App</h1>
+      <p>Find tech events for your events</a></p>
+    </div>
+  </header>
+  <main id="app"> 
+    <router-view></router-view>  
+  </main> 
+</div>
+ 
+<template id="event-list">
+  <div>
+    <div class="actions">
+      <router-link class="btn btn-default" v-bind:to="{path: '/add-event'}">
+        <span class="glyphicon glyphicon-plus"></span>
+        Add Event 
+      </router-link>
+    </div> 
+      
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Skill</th>
+        <th class="col-sm-2">Actions</th>
+      </tr>
+      </thead> 
+      <tbody>
+      <tr v-for="event in events">
+        <td>
+          <router-link v-bind:to="{name: 'event', params: {event_id: event.id}}">{{ event.name }}</router-link>
+        </td>
+        <td>{{ event.title }}</td>
+        <td>
+          {{ event.location }}
+        </td>
+        <td>{{ event.skill}}</td> 
+        <td>
+          <router-link class="btn btn-warning btn-xs" v-bind:to="{name: 'event-edit', params: {event_id: event.id}}">Subscribe</router-link>
+          <router-link class="btn btn-danger btn-xs" v-bind:to="{name: 'event-delete', params: {event_id: event.id}}">Delete</router-link>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<template id="add-event">
+  <div>
+    <h2>Add new event</h2>
+    <form v-on:submit="createevent">
+      <div class="form-group">
+        <label for="add-name">Name</label>
+        <input class="form-control" id="add-name" v-model="event.name" required/>
+      </div>
+      <div class="form-group">
+        <label for="add-title">Title</label>
+        <input class="form-control" id="add-title" v-model="event.title" required/>
+      </div>
+      <div class="form-group">
+        <label for="add-location">Location</label>
+        <input class="form-control" id="add-location" v-model="event.location" required/>
+      </div>      
+      <div class="form-group">
+        <label for="add-skill">skill</label>
+        <input class="form-control" id="add-skill" v-model="event.skill" required/>
+      </div> 
+      <div class="form-group">
+        <label for="add-headshotUri">Link to Headshot</label>
+        <input class="form-control" id="add-headshotUri" v-model="event.headshotUri" required/>
+      </div>  
+      <button type="submit" class="btn btn-primary">Create</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+ 
+<template id="event">
+  <div>
+    <h2>{{ event.name }}</h2>
+    <img v-bind:src="event.headshotUri" alt="Headshot" class="headshot"/>
+    <br/>
+    <b>Title: </b> 
+    <div>{{ event.title }}</div>
+    <b>Location:</b>  
+    <div>{{ event.location }}</div>
+     <b>skill:</b> 
+    <div>{{ event.skill }}</div>
+    <br/> 
+    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+    <router-link v-bind:to="'/'">Back to event list</router-link> 
+  </div>
+</template>
+
+<template id="event-edit">
+  <div>
+    <h2>Subscribe event</h2>
+    <form v-on:submit="updateevent">
+      <div class="form-group">
+        <label for="edit-name">Name</label>
+        <input class="form-control" id="edit-name" v-model="event.name" required/>
+      </div>
+      <div class="form-group">
+        <label for="edit-title">Title</label>
+        <input class="form-control" id="edit-title" v-model="event.title" required/>
+      </div>
+      <div class="form-group">
+        <label for="edit-location">Location</label>
+        <input class="form-control" id="edit-location" v-model="event.location" required/>
+      </div>
+      <div class="form-group">
+        <label for="edit-skill">skill</label>
+        <input class="form-control" id="edit-skill" v-model="event.skill" required/>
+      </div>
+      <div class="form-group">
+        <label for="edit-headshotUri">Link to Headshot</label>
+        <input class="form-control" id="edit-headshotUri" v-model="event.headshotUri" required/>
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+
+<template id="event-delete">
+  <div>
+    <h2>Delete event: {{ event.name }}</h2>
+    <form v-on:submit="deleteevent">
+      <p>The action cannot be undone.</p>
+      <button type="submit" class="btn btn-danger">Delete</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+
+ 
+</body>
+<script>
+//const API_URL = "https://acloudguru-serverless-intro-dev.azurewebsites.net"
+//const API_URL = "http://localhost:7071"
+
+var List = Vue.extend({
+  template: '#event-list',
+  data: function () {
+    return {
+      events : [] }
+  },
+  mounted() {
+    const url = `${API_URL}/api/getEvents/`;
+    axios.get(url) 
+    .then(response => {
+      // JSON responses are automatically parsed.
+      console.log(response.data)
+      this.events = response.data
+    })
+    .catch(e => {
+      console.log(e)
+    })
+  }
+  
+});
+
+var event = Vue.extend({
+  template: '#event',
+  data: function () {
+    return {
+      event :  {}
+    }
+  },
+  created() {
+    const url = `${API_URL}/api/getEvent/?id=${this.$route.params.event_id}`
+    axios.get(url)
+    .then(response => {
+      // JSON responses are automatically parsed.
+      console.log(response.data)
+      this.event = response.data
+    })
+    .catch(e => {
+      this.errors.push(e)
+    })
+  }
+});
+
+var eventEdit = Vue.extend({
+  template: '#event-edit',
+  data: function () {
+    return {
+      event :  {}
+    }
+  },
+  created() {
+    const url = `${API_URL}/api/getEvent/?id=${this.$route.params.event_id}`
+    axios.get(url)
+    .then(response => {
+      // JSON responses are automatically parsed.
+      console.log(response.data)
+      this.event = response.data
+    })
+    .catch(e => {
+      this.errors.push(e)
+    })
+  },
+  methods: {
+    updateevent: function () {
+      var event = this.event;
+      console.log(event)
+      let params = {
+        id: event.id,
+        name: event.name,
+        title: event.title,
+        location: event.location,
+        skill: event.skill,
+        headshotUri: event.headshotUri
+      };
+      const url = `${API_URL}/api/updateEvent/?id=${event.id}`
+      router.push('/');
+      axios.put(url, params).then(function (response) {
+        router.push('/');
+    })
+      .catch(function (error) {
+       // handle error
+      console.log(error);
+   })
+    }
+  }
+});
+
+var eventDelete = Vue.extend({
+  template: '#event-delete',
+  data: function () {
+    return {
+      event :  {}
+    }
+  },
+  created() {
+    const url = `${API_URL}/api/getEvent/?id=${this.$route.params.event_id}`
+    axios.get(url)
+    .then(response => {
+      // JSON responses are automatically parsed.
+      console.log(response.data)
+      this.event = response.data
+    })
+    .catch(e => {
+      this.errors.push(e)
+    })
+  },
+  methods: {
+    deleteevent: function () {
+      const url = `${API_URL}/api/deleteEvent/?id=${this.$route.params.event_id}`
+      router.push('/');
+      return axios.delete(url, '')
+    }
+  }
+});
+
+var Addevent = Vue.extend({
+  template: '#add-event',
+  data: function () {
+    return {event: {name: '', title: '', location: '', skill: '', headshotUri: ''}}
+  },
+  methods: {
+    createevent: function() {
+      var event = this.event;
+      let params = {
+        id: parseInt(Math.random().toString().split('.')[1]),
+        name: event.name,
+        title: event.title,
+        location: event.location,
+        skill: event.skill,
+        headshotUri : event.headshotUri
+      }
+      const url = `${API_URL}/api/createEvent/`;
+      router.push('/');
+      return axios.post(url,params);
+    }
+  }
+});
+
+var router = new VueRouter({routes:[
+  { path: '/', component: List},
+  { path: '/event/:event_id', component: event, name: 'event'},
+  { path: '/add-event', component: Addevent},
+  { path: '/event/:event_id/edit', component: eventEdit, name: 'event-edit'},
+  { path: '/event/:event_id/delete', component: eventDelete, name: 'event-delete'}
+]});
+app = new Vue({
+  router:router
+}).$mount('#app')
+</script>
+<style>
+.logo {
+    width: 75px;
+    float: left;
+    margin-right: 15px;
+  }
+  
+  .headshot {
+    width: 150px;
+    height: 175px;
+    float: left;
+    margin-right: 15px;
+  } 
+  
+  .form-group {
+    max-width: 500px;
+  }
+  
+  .actions {
+    padding: 10px 0;
+  }
+  
+  .glyphicon-euro {
+    font-size: 12px;
+  }
+</style>
+</html>
